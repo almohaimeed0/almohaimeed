@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سجلّ | منصة العروض والطلبات العقارية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#172033;
+    --ink-soft:#2B3448;
+    --paper:#F1F2ED;
+    --panel:#FFFFFF;
+    --brass:#A9824C;
+    --brass-dark:#8C6A3B;
+    --emerald:#2F6E5C;
+    --emerald-bg:#E4EFEA;
+    --rust:#A3462F;
+    --rust-bg:#F5E7E2;
+    --amber:#B08A2E;
+    --amber-bg:#F5EEDD;
+    --slate:#5B6572;
+    --slate-soft:#8A93A0;
+    --line:#DDD9CF;
+    --line-soft:#E9E7E0;
+    --radius:10px;
+    --font-display:'Tajawal', sans-serif;
+    --font-body:'IBM Plex Sans Arabic', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:var(--font-body);
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--brass); color:#fff; }
+  button{ font-family:inherit; cursor:pointer; }
+  input, select, textarea{ font-family:inherit; }
+
+  /* ---------- Auth screen ---------- */
+  #authScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(169,130,76,0.08), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(47,110,92,0.08), transparent 40%),
+      var(--paper);
+  }
+  .auth-card{
+    width:100%;
+    max-width:420px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:36px 32px;
+    box-shadow:0 20px 50px -20px rgba(23,32,51,0.25);
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:28px;
+  }
+  .brand-mark{
+    width:44px; height:44px;
+    border:2px solid var(--ink);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:900; font-size:18px;
+    flex-shrink:0;
+  }
+  .brand-text h1{ font-family:var(--font-display); font-weight:900; font-size:20px; letter-spacing:0.5px;}
+  .brand-text p{ font-size:12px; color:var(--slate); margin-top:2px;}
+
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:13px; color:var(--slate); margin-bottom:6px; font-weight:500;}
+  .field input, .field select, .field textarea{
+    width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:8px;
+    font-size:14px; background:#FCFCFA; color:var(--ink); transition:.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none; border-color:var(--brass); background:#fff;
+    box-shadow:0 0 0 3px rgba(169,130,76,0.12);
+  }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:11px 18px; border-radius:8px; border:none; font-size:14px; font-weight:700;
+    transition:.15s;
+  }
+  .btn-primary{ background:var(--ink); color:#fff; width:100%; }
+  .btn-primary:hover{ background:var(--ink-soft); }
+  .btn-ghost{ background:transparent; color:var(--slate); border:1px solid var(--line); }
+  .btn-ghost:hover{ border-color:var(--slate-soft); color:var(--ink); }
+  .btn-brass{ background:var(--brass); color:#fff; }
+  .btn-brass:hover{ background:var(--brass-dark); }
+  .btn-danger-outline{ background:transparent; color:var(--rust); border:1px solid var(--rust-bg); }
+  .btn-danger-outline:hover{ background:var(--rust-bg); }
+  .btn-sm{ padding:6px 12px; font-size:12.5px; border-radius:6px; }
+
+  .auth-note{ font-size:12px; color:var(--slate-soft); margin-top:16px; line-height:1.7; text-align:center;}
+  .auth-error{ background:var(--rust-bg); color:var(--rust); font-size:13px; padding:10px 12px; border-radius:8px; margin-bottom:14px; display:none; }
+  .auth-error.show{ display:block; }
+
+  /* ---------- App shell ---------- */
+  #appScreen{ display:none; min-height:100vh; }
+  #appScreen.show{ display:flex; }
+
+  .sidebar{
+    width:230px; flex-shrink:0; background:var(--ink); color:#fff;
+    display:flex; flex-direction:column; padding:24px 16px;
+    position:sticky; top:0; height:100vh;
+  }
+  .sidebar .brand{ padding:0 6px; margin-bottom:32px; }
+  .sidebar .brand-mark{ border-color:rgba(255,255,255,0.4); color:#fff; }
+  .sidebar .brand-text h1{ color:#fff; }
+  .sidebar .brand-text p{ color:rgba(255,255,255,0.5); }
+
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:8px;
+    background:none; border:none; color:rgba(255,255,255,0.65); font-size:14px; font-weight:500;
+    text-align:right; width:100%; margin-bottom:4px; transition:.15s;
+  }
+  .nav-item .dot{ width:6px; height:6px; border-radius:50%; background:currentColor; opacity:0; transition:.15s; flex-shrink:0;}
+  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; }
+  .nav-item.active{ background:rgba(169,130,76,0.18); color:#fff; }
+  .nav-item.active .dot{ opacity:1; background:var(--brass); }
+
+  .sidebar-footer{ margin-top:auto; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1); }
+  .user-chip{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .user-avatar{
+    width:34px; height:34px; border-radius:50%; background:var(--brass); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0;
+    font-family:var(--font-display);
+  }
+  .user-chip .uname{ font-size:13px; font-weight:600; }
+  .user-chip .urole{ font-size:11px; color:rgba(255,255,255,0.5); }
+  .logout-btn{
+    width:100%; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.75);
+    border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px; font-size:12.5px;
+  }
+  .logout-btn:hover{ background:rgba(255,255,255,0.12); color:#fff; }
+
+  .main{ flex:1; min-width:0; padding:28px 34px 60px; }
+  .page{ display:none; }
+  .page.active{ display:block; animation:fadeIn .25s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  .page-header{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:26px; flex-wrap:wrap; gap:12px;}
+  .page-header h2{ font-family:var(--font-display); font-size:26px; font-weight:900; }
+  .page-header .sub{ font-size:13px; color:var(--slate); margin-top:4px; }
+  .eyebrow{ font-family:var(--font-mono); font-size:11px; letter-spacing:1.5px; color:var(--brass); text-transform:uppercase; margin-bottom:6px; }
+
+  /* ---------- Dashboard stat cards ---------- */
+  .stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:30px; }
+  .stat-card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; }
+  .stat-card .label{ font-size:12.5px; color:var(--slate); margin-bottom:10px; }
+  .stat-card .value{ font-family:var(--font-mono); font-size:30px; font-weight:700; color:var(--ink); }
+  .stat-card.brass{ border-color:rgba(169,130,76,0.35); }
+  .stat-card.brass .value{ color:var(--brass-dark); }
+
+  .panel{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px; margin-bottom:20px; }
+  .panel-title{ font-family:var(--font-display); font-weight:700; font-size:16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
+
+  /* ---------- Toolbar / filters ---------- */
+  .toolbar{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; align-items:center; }
+  .toolbar select, .toolbar input{ padding:9px 12px; border:1px solid var(--line); border-radius:7px; font-size:13px; background:var(--panel); }
+  .toolbar input{ min-width:180px; }
+  .spacer{ flex:1; }
+
+  /* ---------- Cards list (offers/requests) ---------- */
+  .record-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+  .record-card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px; position:relative; transition:.15s; }
+  .record-card:hover{ border-color:var(--slate-soft); box-shadow:0 8px 24px -16px rgba(23,32,51,0.3); }
+  .record-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+  .record-type{ font-family:var(--font-display); font-weight:700; font-size:16px; }
+  .record-id{ font-family:var(--font-mono); font-size:10.5px; color:var(--slate-soft); }
+  .badge{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+  .badge-available, .badge-active{ background:var(--emerald-bg); color:var(--emerald); }
+  .badge-reserved, .badge-pending{ background:var(--amber-bg); color:var(--amber); }
+  .badge-sold, .badge-closed{ background:var(--rust-bg); color:var(--rust); }
+  .record-price{ font-family:var(--font-mono); font-size:19px; font-weight:700; color:var(--brass-dark); margin:8px 0 12px; }
+  .record-meta{ display:flex; flex-wrap:wrap; gap:6px 14px; font-size:12.5px; color:var(--slate); margin-bottom:12px; }
+  .record-meta b{ color:var(--ink); font-weight:600; }
+  .record-contact{ font-size:12.5px; color:var(--slate); border-top:1px dashed var(--line); padding-top:10px; margin-top:4px; }
+  .record-contact .role-tag{ display:inline-block; font-size:10.5px; background:var(--line-soft); color:var(--slate); padding:2px 8px; border-radius:5px; margin-right:6px; }
+  .record-actions{ display:flex; gap:8px; margin-top:14px; }
+  .record-note{ font-size:12px; color:var(--slate-soft); margin-top:8px; font-style:italic; }
+  .added-by{ font-size:10.5px; color:var(--slate-soft); margin-top:10px; font-family:var(--font-mono); }
+
+  .empty-state{ text-align:center; padding:40px 20px; color:var(--slate-soft); width:100%; }
+  .empty-state h3{ font-family:var(--font-display); color:var(--ink); font-size:16px; margin-bottom:4px; }
+
+  /* ---------- Modal / form ---------- */
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(23,32,51,0.5); z-index:50; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(2px); }
+  .modal-overlay.show{ display:flex; }
+  .modal{ background:var(--panel); border-radius:14px; width:100%; max-width:620px; max-height:88vh; overflow-y:auto; padding:28px 30px; }
+  .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .modal-header h3{ font-family:var(--font-display); font-size:19px; font-weight:800; }
+  .modal-close{ background:none; border:none; font-size:20px; color:var(--slate-soft); cursor:pointer; }
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px 16px; }
+  .form-grid .full{ grid-column:1/-1; }
+  .modal-actions{ display:flex; gap:10px; margin-top:22px; justify-content:flex-end; }
+
+  /* ---------- Matching page ---------- */
+  .match-group{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px; margin-bottom:16px; }
+  .match-req-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--line-soft); }
+  .match-req-head .rtitle{ font-family:var(--font-display); font-weight:700; font-size:15.5px; }
+  .match-req-head .rsub{ font-size:12px; color:var(--slate); margin-top:4px; }
+  .match-list{ display:flex; flex-direction:column; gap:10px; }
+  .match-row{ display:flex; align-items:center; gap:16px; padding:12px 14px; background:var(--paper); border-radius:9px; border:1px solid var(--line-soft); }
+  .stamp{
+    width:54px; height:54px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    border:2px dashed var(--brass); color:var(--brass-dark);
+    font-family:var(--font-display); transform:rotate(-4deg);
+  }
+  .stamp .pct{ font-weight:900; font-size:15px; line-height:1; }
+  .stamp .lbl{ font-size:7px; letter-spacing:0.5px; }
+  .stamp.low{ border-color:var(--slate-soft); color:var(--slate); }
+  .stamp.mid{ border-color:var(--amber); color:var(--amber); }
+  .stamp.high{ border-color:var(--emerald); color:var(--emerald); }
+  .match-row-info{ flex:1; min-width:0; }
+  .match-row-info .mtitle{ font-weight:700; font-size:14px; }
+  .match-row-info .mmeta{ font-size:12px; color:var(--slate); margin-top:3px; }
+  .match-reasons{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .reason-chip{ font-size:10.5px; background:var(--emerald-bg); color:var(--emerald); padding:2px 8px; border-radius:5px; }
+
+  /* ---------- Employees Table ---------- */
+  .emp-table{ width:100%; border-collapse:collapse; text-align:right; font-size:13.5px; }
+  .emp-table th, .emp-table td{ padding:12px 14px; border-bottom:1px solid var(--line-soft); }
+  .emp-table th{ font-size:12px; color:var(--slate); font-weight:600; background:var(--paper); }
+
+  @media (max-width:880px){
+    #appScreen.show{ flex-direction:column; }
+    .sidebar{ width:100%; height:auto; position:relative; flex-direction:row; align-items:center; padding:14px 16px; overflow-x:auto; }
+    .sidebar .brand{ margin-bottom:0; }
+    .sidebar-footer{ display:none; }
+    .nav-item{ width:auto; white-space:nowrap; }
+    .main{ padding:20px; }
+    .form-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== AUTH SCREEN ===================== -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-mark">س</div>
+      <div class="brand-text">
+        <h1>سجلّ</h1>
+        <p>منصة العروض والطلبات العقارية الداخلية</p>
+      </div>
+    </div>
+
+    <div id="authSubtitle" class="auth-note" style="margin-top:0; margin-bottom:18px; text-align:right;"></div>
+    <div class="auth-error" id="authError"></div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="field">
+        <label>اسم المستخدم</label>
+        <input type="text" id="loginUsername" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label>كلمة المرور</label>
+        <input type="password" id="loginPassword" required autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" type="submit">دخول</button>
+    </form>
+
+    <p class="auth-note" id="authNote">التسجيل الذاتي معطّل. الحسابات تُنشأ فقط من قِبل المدير من داخل الموقع.</p>
+  </div>
+</div>
+
+<!-- ===================== APP SCREEN ===================== -->
+<div id="appScreen">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">س</div>
+      <div class="brand-text">
+        <h1>سجلّ</h1>
+        <p>تسويق عقاري</p>
+      </div>
+    </div>
+
+    <nav>
+      <button class="nav-item active" data-page="dashboard" onclick="goPage('dashboard')"><span class="dot"></span> لوحة التحكم</button>
+      <button class="nav-item" data-page="offers" onclick="goPage('offers')"><span class="dot"></span> العروض</button>
+      <button class="nav-item" data-page="requests" onclick="goPage('requests')"><span class="dot"></span> الطلبات</button>
+      <button class="nav-item" data-page="matches" onclick="goPage('matches')"><span class="dot"></span> المطابقات</button>
+      <button class="nav-item" data-page="employees" id="navEmployees" style="display:none" onclick="goPage('employees')"><span class="dot"></span> الموظفون</button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="sbAvatar">؟</div>
+        <div>
+          <div class="uname" id="sbName">—</div>
+          <div class="urole" id="sbRole">موظف مسوّق</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()">تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="eyebrow">نظرة عامة</div>
+          <h2>لوحة التحكم</h2>
+          <div class="sub">ملخص العروض والطلبات المسجّلة في المنصة</div>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="label">إجمالي العروض</div><div class="value" id="statOffers">0</div></div>
+        <div class="stat-card brass"><div class="label">عروض متاحة</div><div class="value" id="statOffersAvailable">0</div></div>
+        <div class="stat-card"><div class="label">إجمالي الطلبات</div><div class="value" id="statRequests">0</div></div>
+        <div class="stat-card brass"><div class="label">طلبات نشطة</div><div class="value" id="statRequestsActive">0</div></div>
+        <div class="stat-card"><div class="label">مطابقات قوية (٧٠٪+)</div><div class="value" id="statStrongMatches">0</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">أحدث العروض المضافة</div>
+        <div id="recentOffers" class="record-grid"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">أحدث الطلبات المضافة</div>
+        <div id="recentRequests" class="record-grid"></div>
+      </div>
+    </section>
+
+    <!-- OFFERS -->
+    <section class="page" id="page-offers">
+      <div class="page-header">
+        <div>
+          <div class="eyebrow">قاعدة البيانات</div>
+          <h2>العروض العقارية</h2>
+          <div class="sub" id="offersCountSub">٠ عرض مسجّل</div>
+        </div>
+        <button class="btn btn-brass" onclick="openOfferModal()">+ إضافة عرض جديد</button>
+      </div>
+
+      <div class="toolbar">
+        <select id="filterOfferType" onchange="renderOffers()"></select>
+        <select id="filterOfferStatus" onchange="renderOffers()">
+          <option value="">كل الحالات</option>
+          <option value="متاح">متاح</option>
+          <option value="محجوز">محجوز</option>
+          <option value="مباع">مباع</option>
+        </select>
+        <input type="text" id="filterOfferSearch" placeholder="بحث بالحي / المخطط / المالك..." oninput="renderOffers()">
+        <div class="spacer"></div>
+      </div>
+
+      <div id="offersList" class="record-grid"></div>
+    </section>
+
+    <!-- REQUESTS -->
+    <section class="page" id="page-requests">
+      <div class="page-header">
+        <div>
+          <div class="eyebrow">قاعدة البيانات</div>
+          <h2>طلبات العملاء</h2>
+          <div class="sub" id="requestsCountSub">٠ طلب مسجّل</div>
+        </div>
+        <button class="btn btn-brass" onclick="openRequestModal()">+ إضافة طلب جديد</button>
+      </div>
+
+      <div class="toolbar">
+        <select id="filterReqType" onchange="renderRequests()"></select>
+        <select id="filterReqStatus" onchange="renderRequests()">
+          <option value="">كل الحالات</option>
+          <option value="نشط">نشط</option>
+          <option value="معلق">معلق</option>
+          <option value="تم الإغلاق">تم الإغلاق</option>
+        </select>
+        <input type="text" id="filterReqSearch" placeholder="بحث بالحي / اسم العميل..." oninput="renderRequests()">
+        <div class="spacer"></div>
+      </div>
+
+      <div id="requestsList" class="record-grid"></div>
+    </section>
+
+    <!-- MATCHES -->
+    <section class="page" id="page-matches">
+      <div class="page-header">
+        <div>
+          <div class="eyebrow">مطابقة تلقائية</div>
+          <h2>المطابقات المحتملة</h2>
+          <div class="sub">تُحتسب المطابقة حسب نوع العقار، الموقع، السعر والمساحة</div>
+        </div>
+      </div>
+      <div id="matchesList"></div>
+    </section>
+
+    <!-- EMPLOYEES -->
+    <section class="page" id="page-employees">
+      <div class="page-header">
+        <div>
+          <div class="eyebrow">إدارة الوصول</div>
+          <h2>حسابات الموظفين</h2>
+          <div class="sub">أنت الوحيد القادر على إنشاء حسابات جديدة</div>
+        </div>
+        <button class="btn btn-brass" onclick="openEmployeeModal()">+ إضافة موظف جديد</button>
+      </div>
+
+      <div class="panel">
+        <div id="employeesList"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===================== EMPLOYEE MODAL ===================== -->
+<div class="modal-overlay" id="employeeModalOverlay">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h3>إضافة حساب موظف</h3>
+      <button class="modal-close" onclick="closeEmployeeModal()">✕</button>
+    </div>
+    <div class="auth-error" id="employeeError"></div>
+    <form id="employeeForm" onsubmit="saveEmployee(event)">
+      <div class="field">
+        <label>الاسم الكامل</label>
+        <input type="text" id="empName" required>
+      </div>
+      <div class="field">
+        <label>اسم المستخدم</label>
+        <input type="text" id="empUsername" required>
+      </div>
+      <div class="field">
+        <label>كلمة المرور المبدئية</label>
+        <input type="password" id="empPassword" required minlength="4">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeEmployeeModal()">إلغاء</button>
+        <button type="submit" class="btn btn-brass">إنشاء الحساب</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== OFFER MODAL ===================== -->
+<div class="modal-overlay" id="offerModalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="offerModalTitle">إضافة عرض جديد</h3>
+      <button class="modal-close" onclick="closeOfferModal()">✕</button>
+    </div>
+    <form id="offerForm" onsubmit="saveOffer(event)">
+      <input type="hidden" id="offerId">
+      <div class="form-grid">
+        <div class="field">
+          <label>نوع العقار</label>
+
+          <select id="offerType" required></select>
+        </div>
+        <div class="field">
+          <label>حالة العرض</label>
+          <select id="offerStatus" required>
+            <option value="متاح">متاح</option>
+            <option value="محجوز">محجوز</option>
+            <option value="مباع">مباع</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>المساحة (م²)</label>
+          <input type="number" id="offerArea" min="0" required>
+        </div>
+        <div class="field">
+          <label>السعر (ريال)</label>
+          <input type="number" id="offerPrice" min="0" required>
+        </div>
+        <div class="field">
+          <label>المدينة</label>
+          <input type="text" id="offerCity" required placeholder="مثال: الرياض">
+        </div>
+        <div class="field">
+          <label>الحي</label>
+          <input type="text" id="offerNeighborhood" required placeholder="مثال: النرجس">
+        </div>
+        <div class="field full">
+          <label>المخطط / الرقم (اختياري)</label>
+          <input type="text" id="offerPlan" placeholder="مثال: مخطط 2456">
+        </div>
+        <div class="field">
+          <label>اسم المالك / المعلن</label>
+          <input type="text" id="offerOwnerName" required>
+        </div>
+        <div class="field">
+          <label>جوال التواصل</label>
+          <input type="tel" id="offerOwnerPhone" required placeholder="05xxxxxxxx">
+        </div>
+        <div class="field full">
+          <label>صفة صاحب العرض</label>
+          <select id="offerRole" required>
+            <option value="مالك مباشر">مالك مباشر</option>
+            <option value="وسيط عقاري">وسيط عقاري</option>
+            <option value="مسوّق">مسوّق</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>ملاحظات (اختياري)</label>
+          <textarea id="offerNotes" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeOfferModal()">إلغاء</button>
+        <button type="submit" class="btn btn-brass">حفظ العرض</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== REQUEST MODAL ===================== -->
+<div class="modal-overlay" id="requestModalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="requestModalTitle">إضافة طلب جديد</h3>
+      <button class="modal-close" onclick="closeRequestModal()">✕</button>
+    </div>
+    <form id="requestForm" onsubmit="saveRequest(event)">
+      <input type="hidden" id="requestId">
+      <div class="form-grid">
+        <div class="field">
+          <label>نوع العقار المطلوب</label>
+          <select id="reqType" required></select>
+        </div>
+        <div class="field">
+          <label>حالة الطلب</label>
+          <select id="reqStatus" required>
+            <option value="نشط">نشط</option>
+            <option value="معلق">معلق</option>
+            <option value="تم الإغلاق">تم الإغلاق</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>المساحة من (م²)</label>
+          <input type="number" id="reqAreaMin" min="0">
+        </div>
+        <div class="field">
+          <label>المساحة إلى (م²)</label>
+          <input type="number" id="reqAreaMax" min="0">
+        </div>
+        <div class="field">
+          <label>الميزانية من (ريال)</label>
+          <input type="number" id="reqBudgetMin" min="0">
+        </div>
+        <div class="field">
+          <label>الميزانية إلى (ريال)</label>
+          <input type="number" id="reqBudgetMax" min="0" required>
+        </div>
+        <div class="field">
+          <label>المدينة</label>
+          <input type="text" id="reqCity" required placeholder="مثال: الرياض">
+        </div>
+        <div class="field">
+          <label>الحي المفضّل (اختياري)</label>
+          <input type="text" id="reqNeighborhood" placeholder="اتركه فارغًا إن لم يكن محددًا">
+        </div>
+        <div class="field">
+          <label>اسم العميل</label>
+          <input type="text" id="reqClientName" required>
+        </div>
+        <div class="field">
+          <label>جوال التواصل</label>
+          <input type="tel" id="reqClientPhone" required placeholder="05xxxxxxxx">
+        </div>
+        <div class="field full">
+          <label>صفة صاحب الطلب</label>
+          <select id="reqRole" required>
+            <option value="مشتري مباشر">مشتري مباشر</option>
+            <option value="وسيط عقاري">وسيط عقاري</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>ملاحظات (اختياري)</label>
+          <textarea id="reqNotes" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeRequestModal()">إلغاء</button>
+        <button type="submit" class="btn btn-brass">حفظ الطلب</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   STATE & CONSTANTS
+===================================================================== */
+let currentUser = null;
+let users = [];
+let offers = [];
+let requests = [];
+const PROPERTY_TYPES = ["شقة","فيلا","دور","أرض","عمارة","محل تجاري","مكتب","استراحة","مستودع"];
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function normalizeDigits(str){
+  const arabicIndic = '٠١٢٣٤٥٦٧٨٩';
+  return (str||'').toString().replace(/[٠-٩]/g, d => arabicIndic.indexOf(d));
+}
+function cleanArabicText(s){
+  return (s||'').normalize('NFKC').replace(/[\u200e\u200f\u202a-\u202e\u00a0\u200b-\u200d\ufeff]/g,'').trim();
+}
+function simpleHash(str){
+  str = normalizeDigits(str);
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (Math.imul(31,h) + str.charCodeAt(i))|0; }
+  return 'h'+h.toString(36)+str.length;
+}
+function fmtMoney(n){ return Number(n||0).toLocaleString('en-US'); }
+function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* =====================================================================
+   STORAGE (Fallback to LocalStorage API)
+===================================================================== */
+const db = {
+  get: (key) => Promise.resolve(localStorage.getItem('sijil_' + key)),
+  set: (key, val) => Promise.resolve(localStorage.setItem('sijil_' + key, val))
+};
+
+async function loadAll(){
+  try {
+    const u = await db.get('users');
+    users = u ? JSON.parse(u) : [];
+  } catch(e){ users = []; }
+
+  try {
+    const o = await db.get('offers');
+    offers = o ? JSON.parse(o) : [];
+  } catch(e){ offers = []; }
+
+  try {
+    const r = await db.get('requests');
+    requests = r ? JSON.parse(r) : [];
+  } catch(e){ requests = []; }
+
+  // Seed default admin
+  let admin = users.find(u => cleanArabicText(u.username) === 'محمد' && u.role === 'admin');
+  if(!admin){
+    admin = { id: uid(), name: 'محمد', username: 'محمد', passwordHash: simpleHash('1234'), role: 'admin', createdAt: Date.now() };
+    users.push(admin);
+    await saveUsers(true);
+  }
+}
+
+async function saveUsers(silent){
+  try{ await db.set('users', JSON.stringify(users)); }
+  catch(e){ if(!silent) alert('تعذّر حفظ بيانات المستخدمين.'); }
+}
+async function saveOffers(){
+  try{ await db.set('offers', JSON.stringify(offers)); }
+  catch(e){ alert('تعذّر حفظ البيانات.'); }
+}
+async function saveRequests(){
+  try{ await db.set('requests', JSON.stringify(requests)); }
+  catch(e){ alert('تعذّر حفظ البيانات.'); }
+}
+
+/* =====================================================================
+   AUTH LOGIC
+===================================================================== */
+function showAuthError(msg){
+  const el = document.getElementById('authError');
+  el.textContent = msg; el.classList.add('show');
+}
+function hideAuthError(){ document.getElementById('authError').classList.remove('show'); }
+
+function isDefaultAdmin(username, password){
+  return cleanArabicText(username) === 'محمد' && normalizeDigits(password).trim() === '1234';
+}
+
+async function handleLogin(e){
+  e.preventDefault();
+  hideAuthError();
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  const foundUser = users.find(u => 
+    cleanArabicText(u.username) === cleanArabicText(username) && 
+    u.passwordHash === simpleHash(password)
+  );
+
+  if (isDefaultAdmin(username, password)) {
+    currentUser = users.find(u => cleanArabicText(u.username) === 'محمد') || { id: 'admin', name: 'محمد', role: 'admin' };
+  } else if (foundUser) {
+    currentUser = foundUser;
+  } else {
+    showAuthError('اسم المستخدم أو كلمة المرور غير صحيحة');
+    return;
+  }
+
+  localStorage.setItem('sijil_session', JSON.stringify(currentUser));
+  initApp();
+}
+
+function handleLogout(){
+  currentUser = null;
+  localStorage.removeItem('sijil_session');
+  document.getElementById('appScreen').classList.remove('show');
+  document.getElementById('authScreen').style.display = 'flex';
+}
+
+/* =====================================================================
+   NAVIGATION & UI INIT
+===================================================================== */
+function initSelectOptions(){
+  const makeOptions = (first) => `<option value="">${first}</option>` + PROPERTY_TYPES.map(t => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('filterOfferType').innerHTML = makeOptions('كل الأنواع');
+  document.getElementById('filterReqType').innerHTML = makeOptions('كل الأنواع');
+  document.getElementById('offerType').innerHTML = makeOptions('اختر النوع');
+  document.getElementById('reqType').innerHTML = makeOptions('اختر النوع');
+}
+
+function initApp(){
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appScreen').classList.add('show');
+
+  // Populate User Info
+  document.getElementById('sbName').textContent = currentUser.name;
+  document.getElementById('sbAvatar').textContent = currentUser.name.charAt(0);
+  document.getElementById('sbRole').textContent = currentUser.role === 'admin' ? 'المدير العام' : 'موظف مسوّق';
+
+  // Toggle Admin Nav
+  document.getElementById('navEmployees').style.display = currentUser.role === 'admin' ? 'flex' : 'none';
+
+  goPage('dashboard');
+}
+
+function goPage(pageId){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const targetPage = document.getElementById(`page-${pageId}`);
+  const targetNav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+
+  if(targetPage) targetPage.classList.add('active');
+  if(targetNav) targetNav.classList.add('active');
+
+  // Render View
+  if(pageId === 'dashboard') renderDashboard();
+  if(pageId === 'offers') renderOffers();
+  if(pageId === 'requests') renderRequests();
+  if(pageId === 'matches') renderMatches();
+  if(pageId === 'employees') renderEmployees();
+}
+
+/* =====================================================================
+   OFFERS MANAGEMENT
+===================================================================== */
+function openOfferModal(id = null){
+  document.getElementById('offerForm').reset();
+  document.getElementById('offerId').value = '';
+  document.getElementById('offerModalTitle').textContent = 'إضافة عرض جديد';
+
+  if(id){
+    const item = offers.find(o => o.id === id);
+    if(item){
+      document.getElementById('offerId').value = item.id;
+      document.getElementById('offerType').value = item.type;
+      document.getElementById('offerStatus').value = item.status;
+      document.getElementById('offerArea').value = item.area;
+      document.getElementById('offerPrice').value = item.price;
+      document.getElementById('offerCity').value = item.city;
+      document.getElementById('offerNeighborhood').value = item.neighborhood;
+      document.getElementById('offerPlan').value = item.plan || '';
+      document.getElementById('offerOwnerName').value = item.ownerName;
+      document.getElementById('offerOwnerPhone').value = item.ownerPhone;
+      document.getElementById('offerRole').value = item.role;
+      document.getElementById('offerNotes').value = item.notes || '';
+      document.getElementById('offerModalTitle').textContent = 'تعديل العرض';
+    }
+  }
+  document.getElementById('offerModalOverlay').classList.add('show');
+}
+
+function closeOfferModal(){ document.getElementById('offerModalOverlay').classList.remove('show'); }
+
+async function saveOffer(e){
+  e.preventDefault();
+  const id = document.getElementById('offerId').value;
+  const payload = {
+    id: id || uid(),
+    type: document.getElementById('offerType').value,
+    status: document.getElementById('offerStatus').value,
+    area: Number(document.getElementById('offerArea').value),
+    price: Number(document.getElementById('offerPrice').value),
+    city: document.getElementById('offerCity').value.trim(),
+    neighborhood: document.getElementById('offerNeighborhood').value.trim(),
+    plan: document.getElementById('offerPlan').value.trim(),
+    ownerName: document.getElementById('offerOwnerName').value.trim(),
+    ownerPhone: document.getElementById('offerOwnerPhone').value.trim(),
+    role: document.getElementById('offerRole').value,
+    notes: document.getElementById('offerNotes').value.trim(),
+    createdById: currentUser.id,
+    createdBy: currentUser.name,
+    createdAt: id ? (offers.find(o=>o.id===id)||{}).createdAt || Date.now() : Date.now()
+  };
+
+  if(id){
+    const idx = offers.findIndex(o => o.id === id);
+    if(idx !== -1) offers[idx] = payload;
+  } else {
+    offers.unshift(payload);
+  }
+
+  await saveOffers();
+  closeOfferModal();
+  renderOffers();
+}
+
+async function deleteOffer(id){
+  if(confirm('هل أنت تأكد من حذف هذا العرض؟')){
+    offers = offers.filter(o => o.id !== id);
+    await saveOffers();
+    renderOffers();
+  }
+}
+
+function getStatusBadge(status){
+  if(status === 'متاح' || status === 'نشط') return `<span class="badge badge-available">${status}</span>`;
+  if(status === 'محجوز' || status === 'معلق') return `<span class="badge badge-reserved">${status}</span>`;
+  return `<span class="badge badge-sold">${status}</span>`;
+}
+
+function renderOffers(){
+  const type = document.getElementById('filterOfferType').value;
+  const status = document.getElementById('filterOfferStatus').value;
+  const search = document.getElementById('filterOfferSearch').value.toLowerCase().trim();
+
+  const filtered = offers.filter(o => {
+    const mType = !type || o.type === type;
+    const mStatus = !status || o.status === status;
+    const mSearch = !search || 
+      o.neighborhood.toLowerCase().includes(search) || 
+      (o.plan && o.plan.toLowerCase().includes(search)) || 
+      o.ownerName.toLowerCase().includes(search);
+    return mType && mStatus && mSearch;
+  });
+
+  document.getElementById('offersCountSub').textContent = `${filtered.length} عرض مسجّل`;
+  const container = document.getElementById('offersList');
+
+  if(!filtered.length){
+    container.innerHTML = `<div class="empty-state"><h3>لا توجد عروض</h3><p>لم يتم العثور على أي نتائج مطابقة</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(o => `
+    <div class="record-card">
+      <div class="record-top">
+        <div>
+          <div class="record-type">${escapeHtml(o.type)} - ${escapeHtml(o.neighborhood)}</div>
+          <div class="record-id">#${o.id.slice(-6)}</div>
+        </div>
+        ${getStatusBadge(o.status)}
+      </div>
+      <div class="record-price">${fmtMoney(o.price)} <small>ريال</small></div>
+      <div class="record-meta">
+        <div>المساحة: <b>${fmtMoney(o.area)} م²</b></div>
+        <div>المدينة: <b>${escapeHtml(o.city)}</b></div>
+        ${o.plan ? `<div>المخطط: <b>${escapeHtml(o.plan)}</b></div>` : ''}
+      </div>
+      <div class="record-contact">
+        <span class="role-tag">${escapeHtml(o.role)}</span>
+        <b>${escapeHtml(o.ownerName)}</b> (${escapeHtml(o.ownerPhone)})
+      </div>
+      ${o.notes ? `<div class="record-note">${escapeHtml(o.notes)}</div>` : ''}
+      <div class="added-by">بواسطة: ${escapeHtml(o.createdBy)}</div>
+      <div class="record-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openOfferModal('${o.id}')">تعديل</button>
+        <button class="btn btn-danger-outline btn-sm" onclick="deleteOffer('${o.id}')">حذف</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* =====================================================================
+   REQUESTS MANAGEMENT
+===================================================================== */
+function openRequestModal(id = null){
+  document.getElementById('requestForm').reset();
+  document.getElementById('requestId').value = '';
+  document.getElementById('requestModalTitle').textContent = 'إضافة طلب جديد';
+
+  if(id){
+    const item = requests.find(r => r.id === id);
+    if(item){
+      document.getElementById('requestId').value = item.id;
+      document.getElementById('reqType').value = item.type;
+      document.getElementById('reqStatus').value = item.status;
+      document.getElementById('reqAreaMin').value = item.areaMin || '';
+      document.getElementById('reqAreaMax').value = item.areaMax || '';
+      document.getElementById('reqBudgetMin').value = item.budgetMin || '';
+      document.getElementById('reqBudgetMax').value = item.budgetMax;
+      document.getElementById('reqCity').value = item.city;
+      document.getElementById('reqNeighborhood').value = item.neighborhood || '';
+      document.getElementById('reqClientName').value = item.clientName;
+      document.getElementById('reqClientPhone').value = item.clientPhone;
+      document.getElementById('reqRole').value = item.role;
+      document.getElementById('reqNotes').value = item.notes || '';
+      document.getElementById('requestModalTitle').textContent = 'تعديل الطلب';
+    }
+  }
+  document.getElementById('requestModalOverlay').classList.add('show');
+}
+
+function closeRequestModal(){ document.getElementById('requestModalOverlay').classList.remove('show'); }
+
+async function saveRequest(e){
+  e.preventDefault();
+  const id = document.getElementById('requestId').value;
+  const payload = {
+    id: id || uid(),
+    type: document.getElementById('reqType').value,
+    status: document.getElementById('reqStatus').value,
+    areaMin: Number(document.getElementById('reqAreaMin').value) || 0,
+    areaMax: Number(document.getElementById('reqAreaMax').value) || 0,
+    budgetMin: Number(document.getElementById('reqBudgetMin').value) || 0,
+    budgetMax: Number(document.getElementById('reqBudgetMax').value),
+    city: document.getElementById('reqCity').value.trim(),
+    neighborhood: document.getElementById('reqNeighborhood').value.trim(),
+    clientName: document.getElementById('reqClientName').value.trim(),
+    clientPhone: document.getElementById('reqClientPhone').value.trim(),
+    role: document.getElementById('reqRole').value,
+    notes: document.getElementById('reqNotes').value.trim(),
+    createdById: currentUser.id,
+    createdBy: currentUser.name,
+    createdAt: id ? (requests.find(r=>r.id===id)||{}).createdAt || Date.now() : Date.now()
+  };
+
+  if(id){
+    const idx = requests.findIndex(r => r.id === id);
+    if(idx !== -1) requests[idx] = payload;
+  } else {
+    requests.unshift(payload);
+  }
+
+  await saveRequests();
+  closeRequestModal();
+  renderRequests();
+}
+
+async function deleteRequest(id){
+  if(confirm('هل أنت تأكد من حذف هذا الطلب؟')){
+    requests = requests.filter(r => r.id !== id);
+    await saveRequests();
+    renderRequests();
+  }
+}
+
+function renderRequests(){
+  const type = document.getElementById('filterReqType').value;
+  const status = document.getElementById('filterReqStatus').value;
+  const search = document.getElementById('filterReqSearch').value.toLowerCase().trim();
+
+  const filtered = requests.filter(r => {
+    const mType = !type || r.type === type;
+    const mStatus = !status || r.status === status;
+    const mSearch = !search || 
+      (r.neighborhood && r.neighborhood.toLowerCase().includes(search)) || 
+      r.clientName.toLowerCase().includes(search);
+    return mType && mStatus && mSearch;
+  });
+
+  document.getElementById('requestsCountSub').textContent = `${filtered.length} طلب مسجّل`;
+  const container = document.getElementById('requestsList');
+
+  if(!filtered.length){
+    container.innerHTML = `<div class="empty-state"><h3>لا توجد طلبات</h3><p>لم يتم العثور على أي نتائج مطابقة</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(r => `
+    <div class="record-card">
+      <div class="record-top">
+        <div>
+          <div class="record-type">${escapeHtml(r.type)} ${r.neighborhood ? '- ' + escapeHtml(r.neighborhood) : ''}</div>
+          <div class="record-id">#${r.id.slice(-6)}</div>
+        </div>
+        ${getStatusBadge(r.status)}
+      </div>
+      <div class="record-price"><small>الميزانية حتى:</small> ${fmtMoney(r.budgetMax)} <small>ريال</small></div>
+      <div class="record-meta">
+        <div>المساحة: <b>${r.areaMin ? fmtMoney(r.areaMin) + ' - ' : ''}${r.areaMax ? fmtMoney(r.areaMax) : 'غير محدد'} م²</b></div>
+        <div>المدينة: <b>${escapeHtml(r.city)}</b></div>
+      </div>
+      <div class="record-contact">
+        <span class="role-tag">${escapeHtml(r.role)}</span>
+        <b>${escapeHtml(r.clientName)}</b> (${escapeHtml(r.clientPhone)})
+      </div>
+      ${r.notes ? `<div class="record-note">${escapeHtml(r.notes)}</div>` : ''}
+      <div class="added-by">بواسطة: ${escapeHtml(r.createdBy)}</div>
+      <div class="record-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openRequestModal('${r.id}')">تعديل</button>
+        <button class="btn btn-danger-outline btn-sm" onclick="deleteRequest('${r.id}')">حذف</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* =====================================================================
+   MATCHING ALGORITHM
+===================================================================== */
+function calculateMatches(){
+  const results = [];
+
+  const activeReqs = requests.filter(r => r.status === 'نشط');
+  const availOffers = offers.filter(o => o.status === 'متاح');
+
+  activeReqs.forEach(req => {
+    const matchedOffers = [];
+
+    availOffers.forEach(off => {
+      let score = 0;
+      const reasons = [];
+
+      // 1. Property Type Matching (40 Points)
+      if(req.type === off.type){
+        score += 40;
+        reasons.push({ text: 'نوع العقار متطابق', strong: true });
+      } else {
+        return; // Non-matching types skipped
+      }
+
+      // 2. City Matching (20 Points)
+      if(req.city.trim().toLowerCase() === off.city.trim().toLowerCase()){
+        score += 20;
+        reasons.push({ text: 'المدينة متطابقة', strong: true });
+      }
+
+      // 3. Neighborhood Matching (15 Points)
+      if(req.neighborhood && off.neighborhood){
+        if(req.neighborhood.trim().toLowerCase() === off.neighborhood.trim().toLowerCase()){
+          score += 15;
+          reasons.push({ text: 'الحي متطابق', strong: true });
+        }
+      }
+
+      // 4. Budget / Price Matching (15 Points)
+      const bMin = req.budgetMin || 0;
+      const bMax = req.budgetMax;
+      if(off.price >= bMin && off.price <= bMax){
+        score += 15;
+        reasons.push({ text: 'السعر ضمن الميزانية', strong: true });
+      } else if (off.price <= bMax * 1.1) {
+        score += 5;
+        reasons.push({ text: 'السعر أعلى بقليل (ضمن 10%)', strong: false });
+      }
+
+      // 5. Area Matching (10 Points)
+      const aMin = req.areaMin || 0;
+      const aMax = req.areaMax || Infinity;
+      if(off.area >= aMin && off.area <= aMax){
+        score += 10;
+        reasons.push({ text: 'المساحة متطابقة', strong: true });
+      }
+
+      if(score >= 50){
+        matchedOffers.push({ offer: off, score, reasons });
+      }
+    });
+
+    if(matchedOffers.length > 0){
+      matchedOffers.sort((a,b) => b.score - a.score);
+      results.push({ request: req, matches: matchedOffers });
+    }
+  });
+
+  return results;
+}
+
+function renderMatches(){
+  const matchGroups = calculateMatches();
+  const container = document.getElementById('matchesList');
+
+  if(!matchGroups.length){
+    container.innerHTML = `<div class="panel empty-state"><h3>لا توجد مطابقات حاليًا</h3><p>قم بإضافة عروض وطلبات نشطة للحصول على مطابقات آلية</p></div>`;
+    return;
+  }
+
+  container.innerHTML = matchGroups.map(g => `
+    <div class="match-group">
+      <div class="match-req-head">
+        <div>
+          <div class="rtitle">طلب: ${escapeHtml(g.request.type)} - ${escapeHtml(g.request.clientName)} (${escapeHtml(g.request.clientPhone)})</div>
+          <div class="rsub">الميزانية: حتى ${fmtMoney(g.request.budgetMax)} ريال | المدينة: ${escapeHtml(g.request.city)} ${g.request.neighborhood ? '| الحي: ' + escapeHtml(g.request.neighborhood) : ''}</div>
+        </div>
+      </div>
+      <div class="match-list">
+        ${g.matches.map(m => {
+          const stampClass = m.score >= 80 ? 'high' : (m.score >= 65 ? 'mid' : 'low');
+          return `
+            <div class="match-row">
+              <div class="stamp ${stampClass}">
+                <div class="pct">${m.score}%</div>
+                <div class="lbl">مطابقة</div>
+              </div>
+              <div class="match-row-info">
+                <div class="mtitle">عرض: ${escapeHtml(m.offer.type)} في ${escapeHtml(m.offer.neighborhood)} - ${fmtMoney(m.offer.price)} ريال</div>
+                <div class="mmeta">المساحة: ${fmtMoney(m.offer.area)} م² | المالك: ${escapeHtml(m.offer.ownerName)} (${escapeHtml(m.offer.ownerPhone)})</div>
+                <div class="match-reasons">
+                  ${m.reasons.map(r => `<span class="reason-chip ${r.strong ? '' : 'weak'}">${escapeHtml(r.text)}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+/* =====================================================================
+   DASHBOARD METRICS
+===================================================================== */
+function renderDashboard(){
+  document.getElementById('statOffers').textContent = offers.length;
+  document.getElementById('statOffersAvailable').textContent = offers.filter(o => o.status === 'متاح').length;
+  document.getElementById('statRequests').textContent = requests.length;
+  document.getElementById('statRequestsActive').textContent = requests.filter(r => r.status === 'نشط').length;
+
+  const matches = calculateMatches();
+  let strongCount = 0;
+  matches.forEach(g => strongCount += g.matches.filter(m => m.score >= 70).length);
+  document.getElementById('statStrongMatches').textContent = strongCount;
+
+  // Render recent 3 items
+  const recentOffs = offers.slice(0, 3);
+  document.getElementById('recentOffers').innerHTML = recentOffs.length ? recentOffs.map(o => `
+    <div class="record-card">
+      <div class="record-top">
+        <div class="record-type">${escapeHtml(o.type)} - ${escapeHtml(o.neighborhood)}</div>
+        ${getStatusBadge(o.status)}
+      </div>
+      <div class="record-price">${fmtMoney(o.price)} <small>ريال</small></div>
+      <div class="record-contact"><b>${escapeHtml(o.ownerName)}</b> (${escapeHtml(o.ownerPhone)})</div>
+    </div>
+  `).join('') : '<div class="empty-state"><p>لا توجد عروض مضافة حديثًا</p></div>';
+
+  const recentReqs = requests.slice(0, 3);
+  document.getElementById('recentRequests').innerHTML = recentReqs.length ? recentReqs.map(r => `
+    <div class="record-card">
+      <div class="record-top">
+        <div class="record-type">${escapeHtml(r.type)} ${r.neighborhood ? '- ' + escapeHtml(r.neighborhood) : ''}</div>
+        ${getStatusBadge(r.status)}
+      </div>
+      <div class="record-price"><small>الميزانية:</small> ${fmtMoney(r.budgetMax)} <small>ريال</small></div>
+      <div class="record-contact"><b>${escapeHtml(r.clientName)}</b> (${escapeHtml(r.clientPhone)})</div>
+    </div>
+  `).join('') : '<div class="empty-state"><p>لا توجد طلبات مضافة حديثًا</p></div>';
+}
+
+/* =====================================================================
+   EMPLOYEES MANAGEMENT (ADMIN)
+===================================================================== */
+function openEmployeeModal(){
+  document.getElementById('employeeForm').reset();
+  document.getElementById('employeeError').classList.remove('show');
+  document.getElementById('employeeModalOverlay').classList.add('show');
+}
+function closeEmployeeModal(){ document.getElementById('employeeModalOverlay').classList.remove('show'); }
+
+async function saveEmployee(e){
+  e.preventDefault();
+  const name = document.getElementById('empName').value.trim();
+  const username = document.getElementById('empUsername').value.trim();
+  const password = document.getElementById('empPassword').value;
+
+  const exists = users.some(u => cleanArabicText(u.username) === cleanArabicText(username));
+  if(exists){
+    const err = document.getElementById('employeeError');
+    err.textContent = 'اسم المستخدم موجود بالفعل';
+    err.classList.add('show');
+    return;
+  }
+
+  users.push({
+    id: uid(),
+    name,
+    username,
+    passwordHash: simpleHash(password),
+    role: 'employee',
+    createdAt: Date.now()
+  });
+
+  await saveUsers();
+  closeEmployeeModal();
+  renderEmployees();
+}
+
+async function deleteEmployee(id){
+  if(confirm('هل أنت تأكد من حذف هذا الحساب؟')){
+    users = users.filter(u => u.id !== id);
+    await saveUsers();
+    renderEmployees();
+  }
+}
+
+function renderEmployees(){
+  const container = document.getElementById('employeesList');
+  if(!users.length){
+    container.innerHTML = '<p>لا يوجد موظفون مسجلون.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="emp-table">
+      <thead>
+        <tr>
+          <th>الاسم</th>
+          <th>اسم المستخدم</th>
+          <th>الصلاحية</th>
+          <th>تاريخ الإنشاء</th>
+          <th>إجراء</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${users.map(u => `
+          <tr>
+            <td><b>${escapeHtml(u.name)}</b></td>
+            <td>${escapeHtml(u.username)}</td>
+            <td>${u.role === 'admin' ? 'مدير النظام' : 'مسوّق'}</td>
+            <td>${new Date(u.createdAt || Date.now()).toLocaleDateString('ar-SA')}</td>
+            <td>
+              ${u.role !== 'admin' ? `<button class="btn btn-danger-outline btn-sm" onclick="deleteEmployee('${u.id}')">حذف</button>` : '—'}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+/* =====================================================================
+   APP INITIALIZATION
+===================================================================== */
+window.addEventListener('DOMContentLoaded', async () => {
+  initSelectOptions();
+  await loadAll();
+
+  // Check existing session
+  const session = localStorage.getItem('sijil_session');
+  if(session){
+    try {
+      currentUser = JSON.parse(session);
+      initApp();
+    } catch(e) {
+      handleLogout();
+    }
+  }
+});
+</script>
+</body>
+</html>
